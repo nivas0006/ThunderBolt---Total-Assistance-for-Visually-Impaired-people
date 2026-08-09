@@ -2,6 +2,16 @@
 
 **PathGuide** is a camera + Claude vision navigation assistant for blind users, designed for a cap-mounted Android phone. A sighted helper sets it up once (load a map, pick a destination); after that the whole screen is one big button — tap, take a photo, hear a spoken instruction.
 
+Built for a Claude community hackathon (Assistive Tech / "Reimagining Daily Living" track). People who become blind later in life often struggle to move independently through spaces they know well, relying on a caretaker to guide them. Canes only sense what's immediately ahead, and GPS doesn't work indoors. PathGuide targets **pre-mapped routine environments** — the user's own home, office, or regular park — rather than trying to solve general-purpose navigation.
+
+## How it works
+
+Instead of a continuous video pipeline (object detection, depth estimation, SLAM), PathGuide uses **snapshot mode**: it captures one photo at a time and returns one instruction per capture. This mirrors how orientation & mobility training actually works — a stop-verify-move loop, not a stream of directions.
+
+A sighted caretaker first walks the space once using [PathMapper](https://github.com/kunguma-vishnu/map-environment), a companion mapping tool, photographing each key spot (door, counter, sofa) and labeling it with notes and how to get there from the previous spot. PathGuide compares each live photo against this labeled record — using Claude's vision model for localization and instruction generation — so it's recognizing *one known place* it's already seen, rather than understanding an arbitrary room from scratch.
+
+Every instruction follows strict rules baked into the system prompt: one physical action per instruction, phrased in steps and body turns rather than distances or compass directions; hazards are always mentioned first; and if a live photo doesn't plausibly match the expected spot, or is too dark or blurry, the app asks the user to stop and recapture rather than guessing a direction.
+
 ## Features
 
 - **Tap-to-navigate interface** — the entire screen is a single button. Tap it, the phone captures a photo from the rear camera, sends it to Claude, and speaks the response aloud (via the Web Speech API).
@@ -67,7 +77,7 @@ Maps are JSON with this shape:
 On the setup screen you can:
 - Upload a map JSON file, or
 - Paste map JSON directly, or
-- Load a map previously saved to `localStorage` under the key `pathmapper_maps` (e.g. by a companion map-authoring tool).
+- Load a map previously saved to `localStorage` under the key `pathmapper_maps`, or fetched from the [PathMapper](https://github.com/kunguma-vishnu/map-environment) API (`GET /api/maps/:map_id`).
 
 ### 4. Running a session
 
